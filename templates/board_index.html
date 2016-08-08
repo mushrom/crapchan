@@ -1,0 +1,84 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>λchan - /{{ board }}/</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    </head>
+
+    <body>
+        <div class="content">
+            <div class="header">
+                /{{board}}/
+            </div>
+
+            {% for listing in boardsum %}
+            {% set thread = get_thread_by_id(listing.thread[0]) %}
+            {% set traversed_op = False %}
+
+            <div class="thread">
+                <div class="thread_subject">
+                    <b><a href="/thread/{{ thread.id }}">{{ thread.subject }}</a></b>
+                </div>
+
+                {% for post_id in listing.posts %}
+                {% set post = get_post_by_id(post_id) %}
+                <div class="thread_post">
+                    <div class="thread_post_image">
+                        ...
+                    </div>
+
+                    <div class="thread_post_contents">
+                        <b>{{post.name}}</b>
+                        {{ time.ctime(post.post_time) }}
+                        <span id="p{{post.id}}">{{post.id}}</span>
+
+                        <br />
+
+                        {{ post.content | safe }}
+                    </div>
+
+                    <div style="clear: both;"></div>
+                </div>
+
+                {% if traversed_op == False %}
+                    {% if listing.omitted != 0 %}
+                    <div class="thread_posts_omitted">
+                        <small>{{listing.omitted}} posts omitted</small>
+                    </div>
+                    {% endif %}
+                    {% set traversed_op = True %}
+                {% endif %}
+
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <div class="new_reply_form">
+                <form action="/post-thread/{{board}}" method="post">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><b>Post new thread</b></td>
+                        </tr>
+                        <tr>
+                            <td>subject</td>
+                            <td><input type="text" name="subject"></td>
+                        </tr>
+
+                        <tr>
+                            <td>reply</td>
+                            <td><textarea name="content" cols=60 rows=10></textarea></td>
+                        </tr>
+
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="submit"></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+        </div>
+    </body>
+</html>
