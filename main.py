@@ -21,7 +21,9 @@ app.config.update(dict(
 
 @app.route("/")
 def index():
-    return "Hello world!"
+    return render_template('main_index.html',
+            boards = get_boards())
+    #return "Hello world!"
 
 @app.route("/<board>/")
 def board_index(board):
@@ -148,6 +150,11 @@ def get_board_thread_ids( board_id ):
 
     return row.fetchall()
 
+def get_boards():
+    db = get_db()
+    row = db.execute("select * from boards")
+    return row.fetchall()
+
 def get_board_id( name ):
     db = get_db()
     row = db.execute("select id from boards where name=?", (name,))
@@ -186,7 +193,7 @@ def get_max_thread_number( ):
     else:
         return 1;
 
-def summarize_thread( post_ids, sum_size=5 ):
+def summarize_thread( post_ids, sum_size=4 ):
     if len(post_ids) > sum_size:
         omitted = len(post_ids) - sum_size
 

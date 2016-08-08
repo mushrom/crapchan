@@ -1,0 +1,24 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>λchan - index</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    </head>
+
+    <body>
+        <div class="content">
+            <div class="header">
+                welcome!
+            </div>
+
+            <div class="thread">
+                {% for board in boards %}
+                <a href="/{{board.name}}/">/{{board.name}}/</a>
+                <br />
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+</html>
+
