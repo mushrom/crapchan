@@ -5,14 +5,14 @@ drop table if exists threads_in_boards;
 drop table if exists boards;
 
 create table posts (
-    id integer primary key autoincrement,
-    post_time integer,
-    name text not null,
+    id           integer primary key autoincrement,
+    post_time    integer,
+    name text    not null,
     content text not null
 );
 
 create table threads (
-    id integer primary key autoincrement,
+    id      integer primary key autoincrement,
     subject text not null
 );
 
@@ -28,10 +28,14 @@ create table threads_in_boards (
 );
 
 create table boards (
-    id integer primary key autoincrement,
-    name text not null
+    id          integer primary key autoincrement,
+    name        text not null,
+    description text not null
 );
 
-insert into boards(name) values ('prog');
-insert into boards(name) values ('tech');
-insert into boards(name) values ('lisp');
+insert into boards(name, description) values
+	('prog', 'General programming discussion');
+insert into boards(name, description) values
+	('tech', 'General technology discussion');
+insert into boards(name, description) values
+	('lisp', 'Lithp');

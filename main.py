@@ -129,6 +129,31 @@ def reply_to_thread(thread_id):
     else:
         return "huh?"
 
+@app.route("/create-board", methods=["POST"])
+def create_board():
+    if request.method == 'POST':
+        thing = get_board_id(request.form["name"])
+
+        print(thing)
+        if thing == None:
+            add_board( request.form["name"], request.form["description"])
+            return """
+                <!doctype html>
+                <html>
+                    <head><title>Success!</title></head>
+                    <body>
+                        <h3>Board was created successfully.</h3>
+                        <a href='/'>return</a>
+                    </body>
+                </html>
+            """
+
+        else:
+            return "board already exists!"
+
+    else:
+        return 'huh?'
+
 def get_thread_by_id( thread_id ):
     db = get_db()
     row = db.execute("select * from threads where id=?", (thread_id,))
@@ -182,6 +207,17 @@ def get_max_post_number( ):
     else:
         return 1;
 
+def get_max_board_id( ):
+    db = get_db()
+
+    row = db.execute( "select max(id) from boards" )
+    row = row.fetchone()
+
+    if row != None:
+        return row[0]
+    else:
+        return 1;
+
 def get_max_thread_number( ):
     db = get_db()
 
@@ -220,6 +256,18 @@ def add_post(thread_id, name, content):
     db.commit()
 
     return post_id
+
+def add_board(name, description):
+    db = get_db()
+
+    db.execute("""
+        insert into boards(name, description)
+            values (?,?)
+    """, (name, description))
+
+    db.commit()
+
+    return get_max_board_id()
 
 def update_thread_time(thread_id):
     db = get_db()
