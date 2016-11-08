@@ -4,6 +4,7 @@ import sys
 import time
 import os
 import sqlite3
+import re
 
 from flask import Flask
 from flask import render_template
@@ -243,7 +244,21 @@ def summarize_thread( post_ids, sum_size=4 ):
 def add_post(thread_id, name, content):
     db = get_db()
 
-    escaped = str(Markup.escape(content)).replace("\n", "<br />")
+    escaped = str(Markup.escape(content))
+    escaped = re.sub( r'&gt;&gt;([0-9]*)',
+                      r'<a href="#p\1">&gt;&gt;\1</a>',
+                      escaped );
+
+    escaped = re.sub( r'^&gt;(.*)$',
+                     r'<span class="thread_post_quote">&gt;\1</span>',
+                     escaped,
+                     0,
+                     re.MULTILINE )
+
+    escaped = escaped.replace( "\n", "<br />" )
+
+    print( "have " + escaped )
+    #print( "thing: " + foo )
 
     db.execute("insert into posts(name, content, post_time) values (?,?,?)",
             (name, escaped, time.time()))

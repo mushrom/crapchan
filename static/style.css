@@ -66,6 +66,10 @@ a:hover {
     margin-top: -127px;
 }
 
+.thread_post_quote {
+    color: #1a701f;
+}
+
 .content {
     margin-left: auto;
     margin-right: auto;
