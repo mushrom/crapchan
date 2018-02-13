@@ -278,7 +278,7 @@ def add_post(thread_id, name, content):
     print( "have " + escaped )
     #print( "thing: " + foo )
 
-    db.execute("insert into posts(name, content, post_time) values (?,?,?)",
+    db.execute("insert into posts(name, content, post_time,flagged) values (?,?,?,0)",
             (name, escaped, time.time()))
 
     post_id = get_max_post_number()
