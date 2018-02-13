@@ -165,6 +165,24 @@ def get_post_by_id( post_id ):
     row = db.execute("select * from posts where id=?", (post_id))
     return row.fetchone()
 
+def flag_post(post_id):
+    db = get_db()
+    db.execute("update "+post_id+" set flagged=1")
+    return """
+                <!doctype html>
+                <html>
+                    <head><title>Success!</title></head>
+                    <body>
+                      <font color="red">  <h3>Post has been flagged for moderation.</h3> </font>
+                        <a href='/'>return</a>
+                    </body>
+                </html>
+            """
+
+def get_post_by_flagged(post_id):
+    db = get_db()
+    db.execute("select * from posts where flagged=1", (post_id))
+
 def get_board_thread_ids( board_id ):
     db = get_db()
 
@@ -314,6 +332,11 @@ def get_db():
         g.sqlite_db = connect_db( )
 
     return g.sqlite_db
+
+@app.route("/admin")
+def index():
+    return render_template('admin.html',
+            flagged_posts = get_post_by_flagged())
 
 if __name__ == "__main__":
     if not os.path.exists(app.config['DATABASE']):
