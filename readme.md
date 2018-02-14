@@ -1,13 +1,12 @@
 SomeBBS
 =======
-###### a lighweight Flask based ImageBoard system. 
+###### a lightweight Flask-based imageboard system. 
 
 Usage
 -----
 
 To run this project, all you need to do is the following. 
-
-1. run init.sh (or source bin\activate)
+1. Download the needed libraries (Flask)
 2. run main.py
 3. Thats it. You're done! 
 
