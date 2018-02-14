@@ -209,7 +209,7 @@ def get_thread_post_ids( thread_id ):
 
     row = db.execute("""
         select post_id from posts_in_threads
-            where thread_id=? and flagged = 0
+            where thread_id=?
             order by post_id asc
     """, (thread_id,))
 
