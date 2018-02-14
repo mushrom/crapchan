@@ -9,6 +9,7 @@ create table posts (
     post_time    integer,
     name text    not null,
     content text not null
+    flagged boolean 
 );
 
 create table threads (
