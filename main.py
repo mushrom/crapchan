@@ -157,12 +157,12 @@ def create_board():
 
 def get_thread_by_id( thread_id ):
     db = get_db()
-    row = db.execute("select * from threads where id=? and flagged = 0", (thread_id,))
+    row = db.execute("select * from threads where id=? and hidden = 0", (thread_id,))
     return row.fetchone()
 
 def get_post_by_id( post_id ):
     db = get_db()
-    row = db.execute("select * from posts where id=? and flagged = 0", (post_id))
+    row = db.execute("select * from posts where id=? and hidden = 0", (post_id))
     return row.fetchone()
 
 def flag_post(post_id):
@@ -218,7 +218,7 @@ def get_thread_post_ids( thread_id ):
 def get_max_post_number( ):
     db = get_db()
 
-    row = db.execute( "select max(id) from posts where flagged = 0" )
+    row = db.execute( "select max(id) from posts where hidden = 0" )
     row = row.fetchone()
 
     if row != None:
@@ -278,8 +278,10 @@ def add_post(thread_id, name, content):
     print( "have " + escaped )
     #print( "thing: " + foo )
 
-    db.execute("insert into posts(name, content, post_time,flagged) values (?,?,?,0)",
-            (name, escaped, time.time()))
+    db.execute("""
+        insert into posts(name, content, post_time, flagged, hidden)
+            values (?,?,?,0,0)
+    """, (name, escaped, time.time()))
 
     post_id = get_max_post_number()
 
