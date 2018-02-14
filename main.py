@@ -334,7 +334,7 @@ def get_db():
     return g.sqlite_db
 
 @app.route("/admin")
-def index():
+def admin():
     return render_template('admin.html',
             flagged_posts = get_post_by_flagged())
 
