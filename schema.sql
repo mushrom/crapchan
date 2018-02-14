@@ -8,12 +8,16 @@ create table posts (
     id           integer primary key autoincrement,
     post_time    integer,
     name text    not null,
-    content text not null
+    content text not null,
+    flagged      boolean,
+    hidden       boolean
 );
 
 create table threads (
     id      integer primary key autoincrement,
-    subject text not null
+    subject text not null,
+    flagged boolean,
+    hidden  boolean
 );
 
 create table posts_in_threads (

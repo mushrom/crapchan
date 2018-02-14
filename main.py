@@ -155,15 +155,40 @@ def create_board():
     else:
         return 'huh?'
 
+@app.route("/admin")
+def admin():
+    return render_template('admin.html',
+            flagged_posts = get_post_by_flagged())
+
+@app.route("/flag-post/<int:post_id>", methods=["POST"])
+def flag_post(post_id):
+    db = get_db()
+    db.execute("update "+post_id+" set flagged=1")
+
+    return """
+        <!doctype html>
+        <html>
+            <head><title>Success!</title></head>
+            <body>
+                <font color="red"><h3>Post has been flagged for moderation.</h3></font>
+                <a href='/'>return</a>
+            </body>
+        </html>
+    """
+
 def get_thread_by_id( thread_id ):
     db = get_db()
-    row = db.execute("select * from threads where id=?", (thread_id,))
+    row = db.execute("select * from threads where id=? and hidden = 0", (thread_id,))
     return row.fetchone()
 
 def get_post_by_id( post_id ):
     db = get_db()
-    row = db.execute("select * from posts where id=?", (post_id))
+    row = db.execute("select * from posts where id=? and hidden = 0", (post_id))
     return row.fetchone()
+
+def get_post_by_flagged(post_id):
+    db = get_db()
+    db.execute("select * from posts where flagged=1", (post_id))
 
 def get_board_thread_ids( board_id ):
     db = get_db()
@@ -200,7 +225,7 @@ def get_thread_post_ids( thread_id ):
 def get_max_post_number( ):
     db = get_db()
 
-    row = db.execute( "select max(id) from posts" )
+    row = db.execute( "select max(id) from posts where hidden = 0" )
     row = row.fetchone()
 
     if row != None:
@@ -260,8 +285,10 @@ def add_post(thread_id, name, content):
     print( "have " + escaped )
     #print( "thing: " + foo )
 
-    db.execute("insert into posts(name, content, post_time) values (?,?,?)",
-            (name, escaped, time.time()))
+    db.execute("""
+        insert into posts(name, content, post_time, flagged, hidden)
+            values (?,?,?,0,0)
+    """, (name, escaped, time.time()))
 
     post_id = get_max_post_number()
 
@@ -311,7 +338,7 @@ def setup_db():
 
 def get_db():
     if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = connect_db( )
+        g.sqlite_db = connect_db()
 
     return g.sqlite_db
 
