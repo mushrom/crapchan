@@ -30,8 +30,7 @@ def index():
 def board_index(board):
     row = get_board_id( board )
 
-    i)f row == None:
-    st
+    if row == None:
         abort(404)
 
     thread_ids = get_board_thread_ids( row[0] )
