@@ -37,9 +37,3 @@ create table boards (
     description text not null
 );
 
-insert into boards(name, description) values
-	('prog', 'General programming discussion');
-insert into boards(name, description) values
-	('tech', 'General technology discussion');
-insert into boards(name, description) values
-	('lisp', 'Lithp');

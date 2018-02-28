@@ -5,6 +5,7 @@ import time
 import os
 import sqlite3
 import re
+import yaml
 
 from flask import Flask
 from flask import render_template
@@ -40,8 +41,6 @@ def board_index(board):
     boardsum = [{"thread" : x[0], "posts" : x[1][0], "omitted" : x[1][1]}
                     for x in zip( thread_ids, post_ids )]
 
-    print( boardsum )
-
     return render_template('board_index.html',
             board            = board,
             boardsum         = boardsum,
@@ -54,18 +53,16 @@ def board_thread(thread_id):
     post_ids = get_thread_post_ids( thread_id )
 
     return render_template('thread.html',
-            thread         = get_thread_by_id( thread_id ),
+            thread         = get_thread_by_id(thread_id),
             post_ids       = post_ids,
             board          = "test",
             get_post_by_id = get_post_by_id,
             time           = time )
 
-    #return "showing thread %s in board /%s/" % (thread_id, "asdf")
-
 @app.route("/post-thread/<board>", methods=["POST"])
 def create_new_thread(board):
     if request.method == 'POST':
-        print( "got subject:<br/>" + request.form["subject"] + "<br />got content:<br />" + request.form["content"] + "<br />" )
+        print( "got subject:" + request.form["subject"] + "got content:" + request.form["content"] )
 
         board_id = get_board_id( board )
 
@@ -79,9 +76,8 @@ def create_new_thread(board):
             subject = "<no subject>"
 
         db = get_db()
-
-        db.execute("insert into threads(subject) values (?)",
-                    (subject,))
+        db.execute("insert into threads(subject, hidden) values (?,?)",
+                   (subject,0))
 
         thread_id = get_max_thread_number()
 
@@ -333,6 +329,17 @@ def setup_db():
 
     with app.open_resource('schema.sql', mode='r') as f:
         db.cursor().executescript(f.read())
+
+    config = open('config.yaml', 'r')
+    configs = yaml.load(config)
+    boards = configs['boards']
+
+    for name in boards:
+        desc = boards[name]
+        db.execute("""
+            insert into boards(name, description)
+                values (?,?)
+        """, (name, desc))
 
     db.commit()
 
