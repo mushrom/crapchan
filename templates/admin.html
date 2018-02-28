@@ -1,0 +1,43 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>λchan - Admin page</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    </head>
+
+    <body>
+        <div class="content">
+            <div class="header">
+                Admin page
+            </div>
+
+            <div class="thread">
+                <div class="thread_subject">
+                    <b>Reported posts</b>
+                </div>
+
+                {% for post in flagged_posts %}
+                <div class="thread_post">
+                    <div class="thread_post_image">
+                        <img src="/static/no-image.gif" />
+                    </div>
+
+                    <div class="thread_post_contents">
+                        <b>{{post.name}}</b>
+                        {{ time.ctime(post.post_time) }}
+                        No.<span id="p{{post.id}}">{{post.id}}</span>
+                        <a href="/unflag-post/{{post.id}}">unflag</a>
+                        <a href="/hide-post/{{post.id}}">hide</a>
+
+                        <br />
+
+                        {{ post.content | safe }}
+                    </div>
+
+                    <div style="clear: both;"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>

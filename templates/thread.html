@@ -19,7 +19,15 @@
 
                 {% for post_id in post_ids %}
                 {% set post = get_post_by_id(post_id) %}
+
+                {% if post.hidden == 1 %}
+                <div class="thread_posts_omitted">
+                    No.<span id="p{{post.id}}">{{post.id}}</span> hidden
+                </div>
+                {% else %}
+
                 <div class="thread_post">
+
                     <div class="thread_post_image">
                         <img src="/static/no-image.gif" />
                     </div>
@@ -28,6 +36,7 @@
                         <b>{{post.name}}</b>
                         {{ time.ctime(post.post_time) }}
                         No.<span id="p{{post.id}}">{{post.id}}</span>
+                        <a href="/flag-post/{{post.id}}">report</a>
 
                         <br />
 
@@ -36,6 +45,7 @@
 
                     <div style="clear: both;"></div>
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
 

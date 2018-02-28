@@ -125,31 +125,63 @@ def create_board():
     else:
         return 'huh?'
 
-@app.route("/admin")
-def admin():
+@app.route("/admin/reported")
+def admin_reported():
     return render_template('admin.html',
-            flagged_posts = get_post_by_flagged())
+            flagged_posts  = get_flagged_posts(),
+            time           = time )
 
-@app.route("/flag-post/<int:post_id>", methods=["POST"])
+@app.route("/admin/hidden")
+def admin_hidden():
+    return render_template('admin.html',
+            flagged_posts  = get_hidden_posts(),
+            time           = time )
+
+@app.route("/flag-post/<int:post_id>", methods=["GET"])
 def flag_post(post_id):
     db = get_db()
-    db.execute("update "+post_id+" set flagged=1")
+    db.execute("update posts set flagged=1 where id=?", (post_id,))
+    db.commit()
 
     return status_page("Post flagged", "Post has been flagged for moderation.")
 
+@app.route("/unflag-post/<int:post_id>", methods=["GET"])
+def unflag_post(post_id):
+    db = get_db()
+    db.execute("update posts set flagged=0 where id=?", (post_id,))
+    db.execute("update posts set hidden=0 where id=?", (post_id,))
+    db.commit()
+
+    return status_page("Post unflagged", "Post has been unflagged.")
+
+@app.route("/hide-post/<int:post_id>", methods=["GET"])
+def hide_post(post_id):
+    db = get_db()
+    db.execute("update posts set hidden=1 where id=?", (post_id,))
+    db.execute("update posts set flagged=0 where id=?", (post_id,))
+    db.commit()
+
+    return status_page("Post hidden", "Post has been hidden.")
+
 def get_thread_by_id( thread_id ):
     db = get_db()
-    row = db.execute("select * from threads where id=? and hidden = 0", (thread_id,))
+    row = db.execute("select * from threads where id=?", (thread_id,))
     return row.fetchone()
 
 def get_post_by_id( post_id ):
     db = get_db()
-    row = db.execute("select * from posts where id=? and hidden = 0", (post_id))
+    row = db.execute("select * from posts where id=?", (post_id))
     return row.fetchone()
 
-def get_post_by_flagged(post_id):
+def get_flagged_posts():
     db = get_db()
-    db.execute("select * from posts where flagged=1", (post_id))
+    row = db.execute("select * from posts where flagged=1")
+    return row.fetchall()
+
+def get_hidden_posts():
+    db = get_db()
+    row = db.execute("select * from posts where hidden=1")
+    return row.fetchall()
 
 def get_board_thread_ids( board_id ):
     db = get_db()
