@@ -12,6 +12,7 @@ from flask import render_template
 from flask import g
 from flask import abort
 from flask import request
+from flask import redirect
 from flask import Markup
 
 app = Flask(__name__)
@@ -62,7 +63,7 @@ def board_thread(thread_id):
 @app.route("/post-thread/<board>", methods=["POST"])
 def create_new_thread(board):
     if request.method == 'POST':
-        print( "got subject:" + request.form["subject"] + "got content:" + request.form["content"] )
+        print( "got subject:" + request.form["subject"] + "\ngot content:" + request.form["content"] )
 
         board_id = get_board_id( board )
 
@@ -92,16 +93,7 @@ def create_new_thread(board):
         add_post(thread_id, "Anonymous", request.form["content"])
         db.commit()
 
-        return """
-            <!doctype html>
-            <html>
-                <head><title>Success!</title></head>
-                <body>
-                    <h3>Thread has been made successfully.</h3>
-                    <a href='/""" + board + """/'>return</a>
-                </body>
-            </html>
-        """
+        return redirect(request.host_url + "thread/" + str(thread_id))
 
     else:
         return 'huh?'
@@ -112,16 +104,7 @@ def reply_to_thread(thread_id):
         add_post(thread_id, request.form["name"], request.form["content"])
         update_thread_time(thread_id)
 
-        return """
-            <!doctype html>
-            <html>
-                <head><title>Success!</title></head>
-                <body>
-                    <h3>Post has been made successfully.</h3>
-                    <a href='/thread/""" + str(thread_id) + """'>return</a>
-                </body>
-            </html>
-        """
+        return redirect(request.host_url + "thread/" + str(thread_id))
 
     else:
         return "huh?"
@@ -134,19 +117,10 @@ def create_board():
         print(thing)
         if thing == None:
             add_board( request.form["name"], request.form["description"])
-            return """
-                <!doctype html>
-                <html>
-                    <head><title>Success!</title></head>
-                    <body>
-                        <h3>Board was created successfully.</h3>
-                        <a href='/'>return</a>
-                    </body>
-                </html>
-            """
+            return redirect(request.host_url + request.form["name"])
 
         else:
-            return "board already exists!"
+            return status_page("Board already exists!", "Please select a unique name.")
 
     else:
         return 'huh?'
@@ -161,16 +135,7 @@ def flag_post(post_id):
     db = get_db()
     db.execute("update "+post_id+" set flagged=1")
 
-    return """
-        <!doctype html>
-        <html>
-            <head><title>Success!</title></head>
-            <body>
-                <font color="red"><h3>Post has been flagged for moderation.</h3></font>
-                <a href='/'>return</a>
-            </body>
-        </html>
-    """
+    return status_page("Post flagged", "Post has been flagged for moderation.")
 
 def get_thread_by_id( thread_id ):
     db = get_db()
@@ -317,6 +282,14 @@ def update_thread_time(thread_id):
     """, (time.time(), thread_id))
 
     db.commit()
+
+def status_page(summary, text, path="/"):
+    return render_template('status.html', status =
+        {
+            "summary":    summary,
+            "text":       text,
+            "return_url": request.host_url + path
+        })
 
 def connect_db():
     rv = sqlite3.connect(app.config['DATABASE'])
