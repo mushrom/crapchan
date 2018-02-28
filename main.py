@@ -5,6 +5,7 @@ import time
 import os
 import sqlite3
 import re
+import yaml
 
 from flask import Flask
 from flask import render_template
@@ -333,6 +334,14 @@ def setup_db():
 
     with app.open_resource('schema.sql', mode='r') as f:
         db.cursor().executescript(f.read())
+
+    config = open('config.yaml', 'r') 
+    configs = yaml.load(config)
+    boards = configs['boards']
+    for i in boards:
+        b = boards[i]
+        db.execute("insert into boards(name, description) values ('"+str(i)+"','"+str(b)+"')")
+
 
     db.commit()
 
