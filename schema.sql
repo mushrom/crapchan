@@ -6,6 +6,7 @@ drop table if exists boards;
 
 create table posts (
     id           integer primary key autoincrement,
+    thread       integer,
     post_time    integer,
     name text    not null,
     content text not null,
@@ -14,21 +15,12 @@ create table posts (
 );
 
 create table threads (
-    id      integer primary key autoincrement,
-    subject text not null,
-    flagged boolean,
-    hidden  boolean
-);
-
-create table posts_in_threads (
-    post_id   integer,
-    thread_id integer
-);
-
-create table threads_in_boards (
-    thread_id     integer,
-    board_id      integer,
-    last_updated  integer
+    id           integer primary key autoincrement,
+    board        integer,
+    last_updated integer,
+    subject      text not null,
+    flagged      boolean,
+    hidden       boolean
 );
 
 create table boards (
@@ -36,4 +28,3 @@ create table boards (
     name        text not null,
     description text not null
 );
-

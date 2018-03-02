@@ -35,29 +35,26 @@ def board_index(board):
     if row == None:
         abort(404)
 
-    thread_ids = get_board_thread_ids( row[0] )
-    post_ids   = [summarize_thread( get_thread_post_ids( x["thread_id"] ))
-                      for x in thread_ids]
+    threads = get_board_threads( row[0] )
+    posts   = [summarize_thread( get_thread_posts(x["id"]))
+                      for x in threads]
 
     boardsum = [{"thread" : x[0], "posts" : x[1][0], "omitted" : x[1][1]}
-                    for x in zip( thread_ids, post_ids )]
+                    for x in zip(threads, posts)]
 
     return render_template('board_index.html',
             board            = board,
             boardsum         = boardsum,
-            get_thread_by_id = get_thread_by_id,
-            get_post_by_id   = get_post_by_id,
             time             = time )
 
 @app.route("/thread/<int:thread_id>")
 def board_thread(thread_id):
-    post_ids = get_thread_post_ids( thread_id )
+    posts = get_thread_posts(thread_id)
 
     return render_template('thread.html',
             thread         = get_thread_by_id(thread_id),
-            post_ids       = post_ids,
+            posts          = posts,
             board          = "test",
-            get_post_by_id = get_post_by_id,
             time           = time )
 
 @app.route("/post-thread/<board>", methods=["POST"])
@@ -77,18 +74,10 @@ def create_new_thread(board):
             subject = "<no subject>"
 
         db = get_db()
-        db.execute("insert into threads(subject, hidden) values (?,?)",
-                   (subject,0))
+        db.execute("insert into threads(board, subject, hidden) values (?,?,?)",
+                   (board_id, subject,0))
 
         thread_id = get_max_thread_number()
-
-        db.execute("""
-            insert into threads_in_boards(
-                thread_id,
-                board_id,
-                last_updated
-            ) values (?,?,?)
-        """, (thread_id, board_id, time.time()))
 
         add_post(thread_id, "Anonymous", request.form["content"])
         db.commit()
@@ -170,7 +159,7 @@ def get_thread_by_id( thread_id ):
 
 def get_post_by_id( post_id ):
     db = get_db()
-    row = db.execute("select * from posts where id=?", (post_id))
+    row = db.execute("select * from posts where id=?", (post_id,))
     return row.fetchone()
 
 def get_flagged_posts():
@@ -183,12 +172,12 @@ def get_hidden_posts():
     row = db.execute("select * from posts where hidden=1")
     return row.fetchall()
 
-def get_board_thread_ids( board_id ):
+def get_board_threads( board_id ):
     db = get_db()
 
     row = db.execute("""
-        select thread_id from threads_in_boards
-            where board_id=?
+        select * from threads
+            where board=?
             order by last_updated desc
     """, (board_id,))
 
@@ -204,13 +193,18 @@ def get_board_id( name ):
     row = db.execute("select id from boards where name=?", (name,))
     return row.fetchone()
 
-def get_thread_post_ids( thread_id ):
+def get_board_name(id):
+    db = get_db()
+    row = db.execute("select name from boards where id=?", (id))
+    return row.fetchone()
+
+def get_thread_posts( thread_id ):
     db = get_db()
 
     row = db.execute("""
-        select post_id from posts_in_threads
-            where thread_id=?
-            order by post_id asc
+        select * from posts
+        where thread=?
+        order by id asc
     """, (thread_id,))
 
     return row.fetchall()
@@ -248,16 +242,16 @@ def get_max_thread_number( ):
     else:
         return 1;
 
-def summarize_thread( post_ids, sum_size=4 ):
-    if len(post_ids) > sum_size:
-        omitted = len(post_ids) - sum_size
+def summarize_thread( posts, sum_size=4 ):
+    if len(posts) > sum_size:
+        omitted = len(posts) - sum_size
 
         print( "ommited " + str(omitted) + " posts")
 
-        return ([post_ids[0]] + post_ids[-sum_size + 1:], omitted)
+        return ([posts[0]] + posts[-sum_size + 1:], omitted)
 
     else:
-        return (post_ids, 0)
+        return (posts, 0)
 
 def add_post(thread_id, name, content):
     db = get_db()
@@ -276,17 +270,13 @@ def add_post(thread_id, name, content):
     escaped = escaped.replace( "\n", "<br />" )
 
     print( "have " + escaped )
-    #print( "thing: " + foo )
 
     db.execute("""
-        insert into posts(name, content, post_time, flagged, hidden)
-            values (?,?,?,0,0)
-    """, (name, escaped, time.time()))
+        insert into posts(thread, name, content, post_time, flagged, hidden)
+            values (?,?,?,?,0,0)
+    """, (thread_id, name, escaped, time.time()))
 
     post_id = get_max_post_number()
-
-    db.execute("insert into posts_in_threads(post_id, thread_id) values (?,?)",
-                (post_id, thread_id))
 
     db.commit()
 
@@ -308,10 +298,10 @@ def update_thread_time(thread_id):
     db = get_db()
 
     db.execute("""
-        update threads_in_boards
+        update threads
             set last_updated=?
-            where thread_id=?
-    """, (time.time(), thread_id))
+            where id=?
+    """, (time.time(), thread_id,))
 
     db.commit()
 

@@ -17,8 +17,7 @@
                     <b>{{ thread.subject }}</b>
                 </div>
 
-                {% for post_id in post_ids %}
-                {% set post = get_post_by_id(post_id) %}
+                {% for post in posts %}
 
                 {% if post.hidden == 1 %}
                 <div class="thread_posts_omitted">

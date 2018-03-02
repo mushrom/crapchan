@@ -13,7 +13,7 @@
             </div>
 
             {% for listing in boardsum %}
-            {% set thread = get_thread_by_id(listing.thread[0]) %}
+            {% set thread = listing.thread %}
             {% set traversed_op = False %}
 
             <div class="thread">
@@ -21,8 +21,7 @@
                     <b><a href="/thread/{{ thread.id }}">{{ thread.subject }}</a></b>
                 </div>
 
-                {% for post_id in listing.posts %}
-                {% set post = get_post_by_id(post_id) %}
+                {% for post in listing.posts %}
                 <div class="thread_post">
                     <div class="thread_post_image">
                         <img src="/static/no-image.gif" />
