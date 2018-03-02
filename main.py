@@ -50,12 +50,13 @@ def board_index(board):
 @app.route("/thread/<int:thread_id>")
 def board_thread(thread_id):
     posts = get_thread_posts(thread_id)
+    thread = get_thread_by_id(thread_id)
 
     return render_template('thread.html',
-            thread         = get_thread_by_id(thread_id),
-            posts          = posts,
-            board          = "test",
-            time           = time )
+            thread = thread,
+            posts  = posts,
+            board  = get_board_name(thread["board"]),
+            time   = time )
 
 @app.route("/post-thread/<board>", methods=["POST"])
 def create_new_thread(board):
@@ -195,8 +196,8 @@ def get_board_id( name ):
 
 def get_board_name(id):
     db = get_db()
-    row = db.execute("select name from boards where id=?", (id))
-    return row.fetchone()
+    row = db.execute("select name from boards where id=?", (id,))
+    return row.fetchone()["name"]
 
 def get_thread_posts( thread_id ):
     db = get_db()
